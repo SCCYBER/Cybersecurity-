@@ -1,186 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SCCYBER Social Engineering Challenge</title>
-
-<style>
-
-body {
-    font-family: Arial, sans-serif;
-    background: #0b0f2a;
-    color: white;
-    text-align: center;
-    padding: 40px;
-}
-
-.game-container {
-    max-width: 700px;
-    margin: auto;
-    background: #1c2147;
-    padding: 30px;
-    border-radius: 10px;
-}
-
-button {
-    display: block;
-    width: 100%;
-    margin: 10px 0;
-    padding: 15px;
-    font-size: 16px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-}
-
-button:hover {
-    opacity: 0.9;
-}
-
-.correct {
-    background: #2ecc71;
-}
-
-.wrong {
-    background: #e74c3c;
-}
-
-#nextBtn {
-    background: #3498db;
-}
-
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SCCYBER Social Engineering Challenge</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
+  <div class="bg-grid"></div>
+  <div class="bg-scanlines"></div>
+  <div class="virus-layer">
+    <div class="virus virus1"></div>
+    <div class="virus virus2"></div>
+    <div class="virus virus3"></div>
+    <div class="virus virus4"></div>
+    <div class="virus virus5"></div>
+  </div>
 
-<div class="game-container">
+  <main class="game-shell">
+    <div class="top-bar">
+      <div class="score-box" id="scoreBox">SCORE: 0 / 5</div>
+      <div class="timer-box" id="timerBox">TIME: 00:00</div>
+    </div>
 
-<h1>SCCYBER Social Engineering Challenge</h1>
+    <section class="hero-card">
+      <img src="logo.png" alt="SCCYBER logo" class="logo" />
+      <h1 class="arcade-title">SOCIAL ENGINEERING CHALLENGE</h1>
+      <p class="subtitle">Pick the safest response in each scenario</p>
+    </section>
 
-<p id="score">Score: 0 / 5</p>
+    <section class="game-card">
+      <div class="progress-wrap">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="question-count" id="questionCount">SCENARIO 1 OF 5</div>
+      </div>
 
-<div id="question"></div>
+      <div id="questionArea">
+        <div class="scenario-tag" id="scenarioTag">PHISHING</div>
+        <h2 class="question-title" id="questionTitle"></h2>
+        <p class="question-text" id="questionText"></p>
+        <div class="answers" id="answers"></div>
+        <div class="feedback" id="feedback"></div>
+      </div>
 
-<div id="answers"></div>
+      <button id="nextBtn" class="next-btn" style="display: none;">NEXT SCENARIO</button>
+    </section>
 
-<button id="nextBtn" onclick="nextQuestion()" style="display:none;">Next Scenario</button>
+    <section class="result-card" id="resultCard" style="display: none;">
+      <img src="logo.png" alt="SCCYBER logo" class="logo result-logo" />
+      <h2 class="arcade-title result-title">MISSION COMPLETE</h2>
+      <div class="final-score" id="finalScore"></div>
+      <p class="result-text" id="resultText"></p>
+      <button class="next-btn" onclick="location.reload()">PLAY AGAIN</button>
+    </section>
+  </main>
 
-</div>
+  <canvas id="confettiCanvas"></canvas>
 
-<script>
-
-let score = 0;
-let currentQuestion = 0;
-
-const questions = [
-
-{
-question: "You receive an email from your CEO asking for an urgent £5,000 payment. What do you do?",
-answers: [
-{text: "Send the payment immediately", correct:false},
-{text: "Verify the request via another channel", correct:true},
-{text: "Ignore the email", correct:false}
-]
-},
-
-{
-question: "You find a USB stick in the office car park labelled 'Payroll'. What should you do?",
-answers: [
-{text: "Plug it into your computer to see what's on it", correct:false},
-{text: "Hand it to IT or security", correct:true},
-{text: "Take it home", correct:false}
-]
-},
-
-{
-question: "You scan a QR code offering free WiFi in a cafe. What should you do?",
-answers: [
-{text: "Connect immediately", correct:false},
-{text: "Verify the network first", correct:true},
-{text: "Enter your email and password", correct:false}
-]
-},
-
-{
-question: "You receive a message saying your Microsoft password has expired and asks you to log in now.",
-answers: [
-{text: "Click the link and log in", correct:false},
-{text: "Go directly to Microsoft login page yourself", correct:true},
-{text: "Forward it to friends", correct:false}
-]
-},
-
-{
-question: "An attacker calls pretending to be IT support asking for your password.",
-answers: [
-{text: "Give them the password", correct:false},
-{text: "Refuse and report it", correct:true},
-{text: "Send it later by email", correct:false}
-]
-}
-
-];
-
-function showQuestion() {
-
-let q = questions[currentQuestion];
-
-document.getElementById("question").innerText = q.question;
-
-let answersDiv = document.getElementById("answers");
-answersDiv.innerHTML = "";
-
-q.answers.forEach(answer => {
-
-let button = document.createElement("button");
-button.innerText = answer.text;
-
-button.onclick = () => {
-
-if(answer.correct){
-score++;
-button.classList.add("correct");
-} else {
-button.classList.add("wrong");
-}
-
-document.getElementById("score").innerText = "Score: " + score + " / 5";
-
-document.getElementById("nextBtn").style.display = "block";
-
-};
-
-answersDiv.appendChild(button);
-
-});
-
-}
-
-function nextQuestion(){
-
-currentQuestion++;
-
-if(currentQuestion >= questions.length){
-
-document.getElementById("question").innerHTML = "<h2>Game Complete</h2>";
-document.getElementById("answers").innerHTML = "<p>Your final score: " + score + " / 5</p>";
-document.getElementById("nextBtn").style.display = "none";
-
-return;
-
-}
-
-document.getElementById("nextBtn").style.display = "none";
-
-showQuestion();
-
-}
-
-showQuestion();
-
-</script>
-
+  <script src="script.js"></script>
 </body>
 </html>
