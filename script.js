@@ -1,220 +1,259 @@
 const questions = [
   {
     tag: "PHISHING",
-    title: "THE URGENT EMAIL",
-    text: "You get an urgent email saying your company account will be suspended today unless you log in through a link and verify your details.",
-    explanation: "Correct move: do not click the link. Check the sender carefully and contact IT using a number or method you already trust. This is classic phishing using urgency and fear.",
+    question: "An email says your Microsoft account will be closed today unless you click a link and log in.",
     answers: [
-      { text: "Click the link quickly so you do not lose access", correct: false },
-      { text: "Ignore the email and hope it goes away", correct: false },
-      { text: "Verify through IT using a trusted channel", correct: true },
-      { text: "Reply and ask if the email is real", correct: false }
+      { text: "Click the link", correct: false },
+      { text: "Ignore it", correct: false },
+      { text: "Check with IT through an official channel", correct: true }
     ]
   },
   {
     tag: "VISHING",
-    title: "THE BANK CALL",
-    text: "You receive a call from someone claiming to be your bank. They say your account is under attack and ask for your card details and PIN to secure it.",
-    explanation: "Correct move: hang up and call your bank back on the official number yourself. Real banks do not ask for your PIN on a call.",
+    question: "Someone calls claiming to be your bank asking for your card details.",
     answers: [
-      { text: "Give them the details because it sounds urgent", correct: false },
-      { text: "Hang up and call the bank on the official number", correct: true },
-      { text: "Give only the card number but not the PIN", correct: false },
-      { text: "Ask them to prove it by telling you your address", correct: false }
+      { text: "Give the details", correct: false },
+      { text: "Hang up and call the bank directly", correct: true },
+      { text: "Give partial details", correct: false }
     ]
   },
   {
     tag: "TAILGATING",
-    title: "THE OFFICE DOOR",
-    text: "You badge into a secure office and someone behind you asks you to hold the door open because they forgot their badge upstairs.",
-    explanation: "Correct move: let the door close and direct them to reception or security. Social engineers exploit politeness in physical spaces too.",
+    question: "Someone asks you to hold the secure office door open.",
     answers: [
-      { text: "Hold the door because they look like staff", correct: false },
-      { text: "Hold the door and carry their coffee as well", correct: false },
-      { text: "Let the door close and direct them to reception", correct: true },
-      { text: "Ask if they know your manager and let them in", correct: false }
+      { text: "Let them in", correct: false },
+      { text: "Send them to reception", correct: true },
+      { text: "Ask their department", correct: false }
     ]
   },
   {
-    tag: "BAITING",
-    title: "THE USB STICK",
-    text: "You find a USB stick in the car park labelled Staff Salaries and it looks important.",
-    explanation: "Correct move: never plug in unknown devices. Hand it to IT or security. This is baiting and it relies on curiosity.",
+    tag: "USB BAITING",
+    question: "You find a USB stick labelled payroll in the car park.",
     answers: [
-      { text: "Open it on your work laptop", correct: false },
-      { text: "Open it on your personal laptop instead", correct: false },
-      { text: "Hand it to IT or security without plugging it in", correct: true },
-      { text: "Take it home and check it later", correct: false }
+      { text: "Plug it in", correct: false },
+      { text: "Give it to IT", correct: true },
+      { text: "Take it home", correct: false }
     ]
   },
   {
     tag: "PRETEXTING",
-    title: "THE NEW COLLEAGUE",
-    text: "A friendly LinkedIn message says they have just joined your company and need the office WiFi password and internal portal link.",
-    explanation: "Correct move: do not share anything. Tell them to go through proper IT onboarding and flag the message. This is pretexting.",
+    question: "Someone on LinkedIn asks for the company WiFi password.",
     answers: [
-      { text: "Share the WiFi password only", correct: false },
-      { text: "Share the portal link but not the password", correct: false },
-      { text: "Refuse and direct them to official IT onboarding", correct: true },
-      { text: "Ask what team they are in and then decide", correct: false }
+      { text: "Share it", correct: false },
+      { text: "Refuse and report it", correct: true },
+      { text: "Share partial info", correct: false }
     ]
   }
 ];
 
-let currentQuestion = 0;
+let index = 0;
 let score = 0;
 let answered = false;
 let startTime = Date.now();
 let timerInterval = null;
 
-const scenarioTag = document.getElementById("scenarioTag");
-const questionTitle = document.getElementById("questionTitle");
-const questionText = document.getElementById("questionText");
-const answersWrap = document.getElementById("answers");
+const question = document.getElementById("question");
+const answers = document.getElementById("answers");
+const scoreText = document.getElementById("score");
 const feedback = document.getElementById("feedback");
 const nextBtn = document.getElementById("nextBtn");
-const scoreBox = document.getElementById("scoreBox");
-const timerBox = document.getElementById("timerBox");
-const progressFill = document.getElementById("progressFill");
-const questionCount = document.getElementById("questionCount");
-const resultCard = document.getElementById("resultCard");
+const result = document.getElementById("result");
 const finalScore = document.getElementById("finalScore");
-const resultText = document.getElementById("resultText");
-const gameCard = document.querySelector(".game-card");
+const tag = document.getElementById("tag");
+const resultHeading = document.getElementById("resultHeading");
+const resultMessage = document.getElementById("resultMessage");
+const questionBox = document.getElementById("questionBox");
+const timerEl = document.getElementById("timer");
+const leaderboardEntry = document.getElementById("leaderboardEntry");
+const playerNameInput = document.getElementById("playerName");
+const saveScoreBtn = document.getElementById("saveScoreBtn");
+const leaderboardList = document.getElementById("leaderboardList");
+
+function formatTime(seconds) {
+  const mins = String(Math.floor(seconds / 60)).padStart(2, "0");
+  const secs = String(seconds % 60).padStart(2, "0");
+  return `${mins}:${secs}`;
+}
 
 function startTimer() {
   timerInterval = setInterval(() => {
-    const totalSeconds = Math.floor((Date.now() - startTime) / 1000);
-    const mins = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
-    const secs = String(totalSeconds % 60).padStart(2, "0");
-    timerBox.textContent = `TIME: ${mins}:${secs}`;
+    const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+    timerEl.innerText = "Time: " + formatTime(elapsedSeconds);
   }, 1000);
 }
 
-function updateTopBar() {
-  scoreBox.textContent = `SCORE: ${score} / ${questions.length}`;
-  questionCount.textContent = `SCENARIO ${currentQuestion + 1} OF ${questions.length}`;
-  progressFill.style.width = `${(currentQuestion / questions.length) * 100}%`;
+function getElapsedSeconds() {
+  return Math.floor((Date.now() - startTime) / 1000);
 }
 
-function renderQuestion() {
+function showQuestion() {
   answered = false;
-  feedback.classList.remove("show");
-  feedback.textContent = "";
+
+  const q = questions[index];
+
+  tag.innerText = q.tag;
+  question.innerText = q.question;
+  feedback.style.display = "none";
+  feedback.innerText = "";
   nextBtn.style.display = "none";
 
-  const q = questions[currentQuestion];
+  answers.innerHTML = "";
 
-  scenarioTag.textContent = q.tag;
-  questionTitle.textContent = q.title;
-  questionText.textContent = q.text;
-  answersWrap.innerHTML = "";
-
-  q.answers.forEach((answer) => {
+  q.answers.forEach((a) => {
     const btn = document.createElement("button");
-    btn.className = "answer-btn";
-    btn.textContent = answer.text;
-
-    btn.addEventListener("click", () => handleAnswer(btn, answer.correct, q.explanation));
-    answersWrap.appendChild(btn);
+    btn.innerText = a.text;
+    btn.onclick = () => selectAnswer(a.correct);
+    answers.appendChild(btn);
   });
-
-  updateTopBar();
 }
 
-function handleAnswer(button, isCorrect, explanation) {
+function selectAnswer(correct) {
   if (answered) return;
   answered = true;
 
-  const allButtons = document.querySelectorAll(".answer-btn");
+  feedback.style.display = "block";
 
-  allButtons.forEach((btn) => {
-    btn.classList.add("disabled");
-  });
-
-  if (isCorrect) {
+  if (correct) {
     score++;
-    button.classList.add("correct");
+    feedback.innerText = "Correct. Good instinct.";
     launchConfetti();
   } else {
-    button.classList.add("wrong");
-    allButtons.forEach((btn, index) => {
-      if (questions[currentQuestion].answers[index].correct) {
-        btn.classList.add("correct");
-      }
-    });
+    feedback.innerText = "Wrong. Social engineers rely on pressure, trust and urgency.";
   }
 
-  scoreBox.textContent = `SCORE: ${score} / ${questions.length}`;
-  feedback.textContent = explanation;
-  feedback.classList.add("show");
-  nextBtn.style.display = "inline-block";
+  scoreText.innerText = "Score: " + score + " / 5";
+  nextBtn.style.display = "block";
+
+  const buttons = answers.querySelectorAll("button");
+  buttons.forEach((btn) => {
+    btn.disabled = true;
+    btn.style.opacity = "0.7";
+    btn.style.cursor = "default";
+  });
 }
 
-nextBtn.addEventListener("click", () => {
-  currentQuestion++;
+nextBtn.onclick = () => {
+  index++;
 
-  if (currentQuestion >= questions.length) {
-    showResults();
+  if (index >= questions.length) {
+    showResult();
     return;
   }
 
-  renderQuestion();
-});
+  showQuestion();
+};
 
-function showResults() {
+function showResult() {
   clearInterval(timerInterval);
-  progressFill.style.width = "100%";
-  gameCard.style.display = "none";
-  resultCard.style.display = "block";
 
-  const totalSeconds = Math.floor((Date.now() - startTime) / 1000);
-  const mins = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
-  const secs = String(totalSeconds % 60).padStart(2, "0");
+  const elapsedSeconds = getElapsedSeconds();
 
-  finalScore.innerHTML = `${score} / ${questions.length}<br>TIME ${mins}:${secs}`;
+  questionBox.style.display = "none";
+  result.style.display = "block";
 
-  if (score === 5) {
-    resultText.textContent = "Perfect run. Strong instincts. You spotted every social engineering move and handled each one properly.";
-  } else if (score >= 4) {
-    resultText.textContent = "Good result. You passed. You clearly understand the basics and you are not easy to rush or manipulate.";
-  } else if (score >= 2) {
-    resultText.textContent = "Not a bad start, but social engineering still caught you a few times. That is exactly why awareness training matters.";
+  finalScore.innerText = "Final Score: " + score + " / 5  |  Time: " + formatTime(elapsedSeconds);
+
+  if (score >= 4) {
+    resultHeading.innerText = "MISSION COMPLETE";
+    resultHeading.style.color = "#52ff9a";
+    resultHeading.style.textShadow = "0 0 12px #52ff9a";
+    finalScore.style.color = "#52ff9a";
+    resultMessage.innerText = "You passed. Strong awareness. You handled most of the attacks properly.";
+    leaderboardEntry.style.display = "block";
   } else {
-    resultText.textContent = "That was rough, but useful. Social engineering works because it targets normal human behaviour. Review it and go again.";
+    resultHeading.innerText = "MISSION INCOMPLETE";
+    resultHeading.style.color = "#ff3b6b";
+    resultHeading.style.textShadow = "0 0 12px #ff3b6b";
+    finalScore.style.color = "#ff3b6b";
+    resultMessage.innerText = "You did not pass this time. Social engineering works because it targets normal human behaviour. Go again.";
+    leaderboardEntry.style.display = "none";
   }
+
+  renderLeaderboard();
 }
 
-renderQuestion();
+function getLeaderboard() {
+  const saved = localStorage.getItem("sccyberLeaderboard");
+  return saved ? JSON.parse(saved) : [];
+}
+
+function saveLeaderboard(entries) {
+  localStorage.setItem("sccyberLeaderboard", JSON.stringify(entries));
+}
+
+function renderLeaderboard() {
+  const leaderboard = getLeaderboard();
+  leaderboardList.innerHTML = "";
+
+  if (leaderboard.length === 0) {
+    const li = document.createElement("li");
+    li.innerText = "No scores yet";
+    leaderboardList.appendChild(li);
+    return;
+  }
+
+  leaderboard.forEach((entry) => {
+    const li = document.createElement("li");
+    li.innerText = `${entry.name} - ${formatTime(entry.time)}`;
+    leaderboardList.appendChild(li);
+  });
+}
+
+saveScoreBtn.onclick = () => {
+  let name = playerNameInput.value.trim().toUpperCase();
+
+  name = name.replace(/[^A-Z0-9]/g, "").slice(0, 7);
+
+  if (!name) {
+    alert("Enter a name up to 7 characters");
+    return;
+  }
+
+  const elapsedSeconds = getElapsedSeconds();
+  const leaderboard = getLeaderboard();
+
+  leaderboard.push({
+    name: name,
+    time: elapsedSeconds
+  });
+
+  leaderboard.sort((a, b) => a.time - b.time);
+
+  const top10 = leaderboard.slice(0, 10);
+  saveLeaderboard(top10);
+
+  playerNameInput.value = "";
+  leaderboardEntry.style.display = "none";
+  renderLeaderboard();
+};
+
+showQuestion();
+renderLeaderboard();
 startTimer();
 
-/* Arcade confetti */
-const canvas = document.getElementById("confettiCanvas");
+/* Confetti */
+const canvas = document.getElementById("confetti");
 const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
 let particles = [];
 
-function resizeCanvas() {
+window.addEventListener("resize", () => {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
-}
-resizeCanvas();
-window.addEventListener("resize", resizeCanvas);
+});
 
 function launchConfetti() {
-  const colors = ["#52ff9a", "#b14cff", "#ff2fb3", "#ffffff"];
-  const centerX = window.innerWidth / 2;
-  const centerY = window.innerHeight / 3;
-
   for (let i = 0; i < 80; i++) {
     particles.push({
-      x: centerX,
-      y: centerY,
-      size: Math.random() * 8 + 4,
-      color: colors[Math.floor(Math.random() * colors.length)],
+      x: window.innerWidth / 2,
+      y: window.innerHeight / 3,
       vx: (Math.random() - 0.5) * 10,
       vy: Math.random() * -8 - 2,
-      gravity: 0.18,
-      life: 70
+      size: Math.random() * 8 + 4,
+      color: ["#52ff9a", "#b14cff", "#ff3b6b", "#ffffff"][Math.floor(Math.random() * 4)],
+      life: 80
     });
   }
 }
@@ -225,7 +264,7 @@ function animateConfetti() {
   particles.forEach((p) => {
     p.x += p.vx;
     p.y += p.vy;
-    p.vy += p.gravity;
+    p.vy += 0.2;
     p.life -= 1;
 
     ctx.fillStyle = p.color;
@@ -235,4 +274,5 @@ function animateConfetti() {
   particles = particles.filter((p) => p.life > 0);
   requestAnimationFrame(animateConfetti);
 }
+
 animateConfetti();
